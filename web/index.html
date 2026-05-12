@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>nRF52840 MicLab</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #111827;
+      --muted: #667085;
+      --line: #d8dee9;
+      --blue: #2563eb;
+      --green: #059669;
+      --red: #dc2626;
+      --amber: #d97706;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    header {
+      padding: 20px 24px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 20px auto 40px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .toolbar, .grid, .asr-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .toolbar {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .asr-grid {
+      grid-template-columns: 1fr 1.2fr;
+    }
+
+    section, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    button, select, input, textarea {
+      font: inherit;
+    }
+
+    button {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 650;
+      padding: 8px 12px;
+    }
+
+    button.primary {
+      background: var(--blue);
+      color: #fff;
+      border-color: var(--blue);
+    }
+
+    button.danger {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    input[type="text"], input[type="number"], input[type="password"], select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 10px;
+    }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 8px 0 12px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      background: #fbfcff;
+      min-height: 76px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .metric .value {
+      font-size: 24px;
+      font-weight: 750;
+      line-height: 1.1;
+    }
+
+    .status {
+      min-height: 40px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #fbfcff;
+      padding: 10px 12px;
+      color: var(--muted);
+    }
+
+    .status.ok { color: var(--green); }
+    .status.warn { color: var(--amber); }
+    .status.err { color: var(--red); }
+
+    canvas {
+      width: 100%;
+      height: 180px;
+      background: #0b1020;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      min-height: 40px;
+    }
+
+    .downloads a {
+      color: var(--blue);
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 130px;
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcff;
+      padding: 10px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 860px) {
+      .toolbar, .grid, .asr-grid, .metrics, .checks {
+        grid-template-columns: 1fr;
+      }
+      header {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>nRF52840 MicLab</h1>
+  </header>
+
+  <main>
+    <section>
+      <h2>连接与录音</h2>
+      <div class="toolbar">
+        <button id="connectBtn" class="primary">连接设备</button>
+        <button id="startBtn" disabled>开始录音</button>
+        <button id="stopBtn" disabled>停止录音</button>
+        <button id="clearBtn">清空录音</button>
+      </div>
+      <div id="status" class="status">请使用支持 Web Bluetooth 的 Chrome / Edge，并通过 HTTPS 或 localhost 打开页面。</div>
+    </section>
+
+    <div class="grid">
+      <section>
+        <h2>硬件参数</h2>
+        <div class="row">
+          <label>PDM Gain
+            <input id="gain" type="range" min="0" max="80" value="35">
+          </label>
+          <button id="sendGainBtn" disabled>发送 <span id="gainVal">35</span></button>
+        </div>
+        <div class="row">
+          <label>Digital Gain
+            <input id="dgain" type="range" min="0.25" max="12" value="1.8" step="0.05">
+          </label>
+          <button id="sendDgainBtn" disabled>发送 <span id="dgainVal">1.80</span></button>
+        </div>
+        <div class="row">
+          <label>AGC Target RMS
+            <input id="target" type="range" min="400" max="8000" value="2400" step="100">
+          </label>
+          <button id="sendTargetBtn" disabled>发送 <span id="targetVal">2400</span></button>
+        </div>
+        <div class="checks">
+          <label class="check"><input id="proc" type="checkbox" checked> 前处理</label>
+          <label class="check"><input id="dc" type="checkbox" checked> DC 去除</label>
+          <label class="check"><input id="agc" type="checkbox" checked> AGC</label>
+          <label class="check"><input id="gate" type="checkbox"> 噪声门</label>
+        </div>
+        <button id="sendTogglesBtn" disabled>同步开关</button>
+      </section>
+
+      <section>
+        <h2>实时指标</h2>
+        <div class="metrics">
+          <div class="metric"><div class="label">RMS</div><div id="mRms" class="value">0</div></div>
+          <div class="metric"><div class="label">Peak</div><div id="mPeak" class="value">0</div></div>
+          <div class="metric"><div class="label">BLE B/s</div><div id="mBps" class="value">0</div></div>
+          <div class="metric"><div class="label">Drop / Overflow</div><div id="mDrop" class="value">0 / 0</div></div>
+        </div>
+        <p class="small">建议：正常说话 Peak 约 8000-20000，低声也尽量有 1000+；Clip 长期增长说明增益过大。</p>
+      </section>
+    </div>
+
+    <section>
+      <h2>波形</h2>
+      <canvas id="wave" width="1200" height="240"></canvas>
+    </section>
+
+    <section>
+      <h2>录音文件</h2>
+      <div class="downloads" id="downloads">
+        <span class="small">录音停止后会生成 WAV 下载链接，也可以直接播放回听。</span>
+      </div>
+      <audio id="player" controls style="width:100%; margin-top:12px;"></audio>
+    </section>
+
+    <div class="asr-grid">
+      <section>
+        <h2>ASR 配置</h2>
+        <label>ASR Endpoint
+          <input id="asrUrl" type="text" placeholder="例如 http://localhost:8787/asr">
+        </label>
+        <label>Authorization Header
+          <input id="asrAuth" type="password" placeholder="可选，例如 Bearer sk-...">
+        </label>
+        <label>请求格式
+          <select id="asrMode">
+            <option value="multipart">multipart/form-data: file=audio.wav</option>
+            <option value="raw">raw WAV body: audio/wav</option>
+          </select>
+        </label>
+        <label>标准文本（用于计算粗略精度）
+          <textarea id="referenceText" placeholder="把你实际朗读的文本放在这里。"></textarea>
+        </label>
+        <button id="runAsrBtn" disabled class="primary">转录并评估</button>
+      </section>
+
+      <section>
+        <h2>转录结果</h2>
+        <pre id="asrResult">等待测试。</pre>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+    const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+    const METRICS = '6e400004-b5a3-f393-e0a9-e50e24dcca9e';
+    const SAMPLE_RATE = 16000;
+
+    let device;
+    let server;
+    let txChar;
+    let rxChar;
+    let metricsChar;
+    let recording = false;
+    let chunks = [];
+    let wavBlob = null;
+    let wavUrl = null;
+    let lastSamples = new Int16Array(0);
+
+    const $ = id => document.getElementById(id);
+    const statusEl = $('status');
+    const canvas = $('wave');
+    const ctx = canvas.getContext('2d');
+
+    function setStatus(text, cls = '') {
+      statusEl.textContent = text;
+      statusEl.className = 'status ' + cls;
+    }
+
+    function setConnectedUi(connected) {
+      $('connectBtn').disabled = connected;
+      $('startBtn').disabled = !connected || recording;
+      $('stopBtn').disabled = !connected || !recording;
+      $('sendGainBtn').disabled = !connected;
+      $('sendDgainBtn').disabled = !connected;
+      $('sendTargetBtn').disabled = !connected;
+      $('sendTogglesBtn').disabled = !connected;
+      $('runAsrBtn').disabled = !wavBlob;
+    }
+
+    function updateRangeLabels() {
+      $('gainVal').textContent = $('gain').value;
+      $('dgainVal').textContent = Number($('dgain').value).toFixed(2);
+      $('targetVal').textContent = $('target').value;
+    }
+
+    async function sendCommand(cmd) {
+      if (!rxChar) return;
+      const data = new TextEncoder().encode(cmd);
+      await rxChar.writeValue(data);
+    }
+
+    async function connect() {
+      if (!navigator.bluetooth) {
+        setStatus('当前浏览器不支持 Web Bluetooth。请用 Chrome / Edge。', 'err');
+        return;
+      }
+      try {
+        device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'nRF52840-MicLab' }, { namePrefix: 'PsyGuard' }],
+          optionalServices: [SERVICE],
+        });
+        device.addEventListener('gattserverdisconnected', () => {
+          recording = false;
+          setConnectedUi(false);
+          setStatus('设备已断开。', 'warn');
+        });
+        server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE);
+        txChar = await service.getCharacteristic(TX);
+        rxChar = await service.getCharacteristic(RX);
+        try {
+          metricsChar = await service.getCharacteristic(METRICS);
+        } catch (_) {
+          metricsChar = null;
+        }
+
+        await txChar.startNotifications();
+        txChar.addEventListener('characteristicvaluechanged', onAudio);
+
+        if (metricsChar) {
+          await metricsChar.startNotifications();
+          metricsChar.addEventListener('characteristicvaluechanged', onMetrics);
+        }
+
+        setStatus(`已连接 ${device.name || 'nRF52840'}。`, 'ok');
+        setConnectedUi(true);
+        await syncToggles();
+        await sendCommand(`GAIN=${$('gain').value}`);
+        await sendCommand(`DGAIN=${$('dgain').value}`);
+        await sendCommand(`TARGET=${$('target').value}`);
+      } catch (err) {
+        setStatus(`连接失败：${err.message}`, 'err');
+      }
+    }
+
+    function onAudio(event) {
+      const value = event.target.value;
+      const copy = new Uint8Array(value.byteLength);
+      for (let i = 0; i < value.byteLength; i++) copy[i] = value.getUint8(i);
+      if (recording) chunks.push(copy);
+
+      const sampleCount = Math.floor(copy.byteLength / 2);
+      const samples = new Int16Array(sampleCount);
+      for (let i = 0; i < sampleCount; i++) {
+        samples[i] = value.getInt16(i * 2, true);
+      }
+      lastSamples = samples;
+      drawWave(samples);
+    }
+
+    function onMetrics(event) {
+      const text = new TextDecoder().decode(event.target.value);
+      try {
+        const m = JSON.parse(text);
+        $('mRms').textContent = m.rms ?? 0;
+        $('mPeak').textContent = m.peak ?? 0;
+        $('mBps').textContent = m.bps ?? 0;
+        $('mDrop').textContent = `${m.drop ?? 0} / ${m.ovf ?? 0}`;
+        if (m.gain !== undefined) {
+          $('gain').value = m.gain;
+          updateRangeLabels();
+        }
+      } catch (_) {
+        setStatus(`Metrics 解析失败：${text}`, 'warn');
+      }
+    }
+
+    function drawWave(samples) {
+      ctx.fillStyle = '#0b1020';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const mid = canvas.height / 2;
+      const step = Math.max(1, Math.floor(samples.length / canvas.width));
+      for (let x = 0; x < canvas.width; x++) {
+        const idx = Math.min(samples.length - 1, x * step);
+        const y = mid - (samples[idx] / 32768) * (canvas.height * 0.45);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, mid);
+      ctx.lineTo(canvas.width, mid);
+      ctx.stroke();
+    }
+
+    async function startRecording() {
+      chunks = [];
+      wavBlob = null;
+      revokeWav();
+      recording = true;
+      setConnectedUi(true);
+      await rxChar.writeValue(new Uint8Array([1]));
+      setStatus('录音中。请朗读固定测试文本，低声/正常声/远距离各测一次。', 'ok');
+    }
+
+    async function stopRecording() {
+      recording = false;
+      await rxChar.writeValue(new Uint8Array([0]));
+      buildWav();
+      setConnectedUi(true);
+      setStatus(`录音完成，共 ${formatBytes(chunks.reduce((n, c) => n + c.byteLength, 0))} PCM。`, 'ok');
+    }
+
+    function clearRecording() {
+      chunks = [];
+      wavBlob = null;
+      revokeWav();
+      $('downloads').innerHTML = '<span class="small">录音已清空。</span>';
+      $('player').removeAttribute('src');
+      $('runAsrBtn').disabled = true;
+      $('asrResult').textContent = '等待测试。';
+    }
+
+    function buildWav() {
+      const pcmLen = chunks.reduce((n, c) => n + c.byteLength, 0);
+      const wav = new ArrayBuffer(44 + pcmLen);
+      const view = new DataView(wav);
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + pcmLen, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, SAMPLE_RATE, true);
+      view.setUint32(28, SAMPLE_RATE * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, pcmLen, true);
+      let offset = 44;
+      const target = new Uint8Array(wav);
+      for (const c of chunks) {
+        target.set(c, offset);
+        offset += c.byteLength;
+      }
+      wavBlob = new Blob([wav], { type: 'audio/wav' });
+      wavUrl = URL.createObjectURL(wavBlob);
+      const name = `nrf52840-mic-${new Date().toISOString().replace(/[:.]/g, '-')}.wav`;
+      $('downloads').innerHTML = `<a href="${wavUrl}" download="${name}">下载 WAV</a><span class="small">${formatBytes(wavBlob.size)}, ${((pcmLen / 2) / SAMPLE_RATE).toFixed(2)} 秒</span>`;
+      $('player').src = wavUrl;
+      $('runAsrBtn').disabled = false;
+    }
+
+    function revokeWav() {
+      if (wavUrl) URL.revokeObjectURL(wavUrl);
+      wavUrl = null;
+    }
+
+    function writeString(view, offset, text) {
+      for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i));
+    }
+
+    function formatBytes(n) {
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+      return `${(n / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    async function syncToggles() {
+      await sendCommand(`PROC=${$('proc').checked ? 1 : 0}`);
+      await sendCommand(`DC=${$('dc').checked ? 1 : 0}`);
+      await sendCommand(`AGC=${$('agc').checked ? 1 : 0}`);
+      await sendCommand(`GATE=${$('gate').checked ? 1 : 0}`);
+    }
+
+    async function runAsr() {
+      if (!wavBlob) return;
+      const url = $('asrUrl').value.trim();
+      if (!url) {
+        setStatus('请先填写 ASR Endpoint。', 'warn');
+        return;
+      }
+
+      $('asrResult').textContent = '转录中...';
+      try {
+        const headers = {};
+        const auth = $('asrAuth').value.trim();
+        if (auth) headers['Authorization'] = auth;
+
+        let body;
+        if ($('asrMode').value === 'multipart') {
+          body = new FormData();
+          body.append('file', wavBlob, 'audio.wav');
+        } else {
+          headers['Content-Type'] = 'audio/wav';
+          body = wavBlob;
+        }
+
+        const resp = await fetch(url, { method: 'POST', headers, body });
+        const text = await resp.text();
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${text}`);
+
+        let transcript = text;
+        try {
+          const json = JSON.parse(text);
+          transcript = json.text || json.transcript || json.result || text;
+        } catch (_) {}
+
+        const ref = $('referenceText').value.trim();
+        const score = ref ? similarity(ref, transcript) : null;
+        $('asrResult').textContent = score === null
+          ? transcript
+          : `${transcript}\n\n粗略相似度：${(score * 100).toFixed(1)}%`;
+      } catch (err) {
+        $('asrResult').textContent = `ASR 请求失败：${err.message}`;
+      }
+    }
+
+    function normalizeText(s) {
+      return s.replace(/\s+/g, '').replace(/[，。！？、,.!?;；:："'“”‘’()（）\[\]【】]/g, '').toLowerCase();
+    }
+
+    function similarity(a, b) {
+      a = normalizeText(a);
+      b = normalizeText(b);
+      if (!a && !b) return 1;
+      const dist = levenshtein(a, b);
+      return Math.max(0, 1 - dist / Math.max(a.length, b.length, 1));
+    }
+
+    function levenshtein(a, b) {
+      const dp = Array.from({ length: b.length + 1 }, (_, i) => i);
+      for (let i = 1; i <= a.length; i++) {
+        let prev = dp[0];
+        dp[0] = i;
+        for (let j = 1; j <= b.length; j++) {
+          const tmp = dp[j];
+          dp[j] = Math.min(
+            dp[j] + 1,
+            dp[j - 1] + 1,
+            prev + (a[i - 1] === b[j - 1] ? 0 : 1),
+          );
+          prev = tmp;
+        }
+      }
+      return dp[b.length];
+    }
+
+    $('connectBtn').addEventListener('click', connect);
+    $('startBtn').addEventListener('click', startRecording);
+    $('stopBtn').addEventListener('click', stopRecording);
+    $('clearBtn').addEventListener('click', clearRecording);
+    $('sendGainBtn').addEventListener('click', () => sendCommand(`GAIN=${$('gain').value}`));
+    $('sendDgainBtn').addEventListener('click', () => sendCommand(`DGAIN=${$('dgain').value}`));
+    $('sendTargetBtn').addEventListener('click', () => sendCommand(`TARGET=${$('target').value}`));
+    $('sendTogglesBtn').addEventListener('click', syncToggles);
+    $('runAsrBtn').addEventListener('click', runAsr);
+
+    for (const id of ['gain', 'dgain', 'target']) {
+      $(id).addEventListener('input', updateRangeLabels);
+    }
+
+    updateRangeLabels();
+    drawWave(lastSamples);
+    setConnectedUi(false);
+  </script>
+</body>
+</html>
