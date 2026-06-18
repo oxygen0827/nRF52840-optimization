@@ -14,6 +14,7 @@
 
 ```text
 firmware/PdmBleAudioOptimized/PdmBleAudioOptimized.ino
+firmware/PsyGuardVoiceKeyboard/PsyGuardVoiceKeyboard.ino
 web/index.html
 ```
 
@@ -34,6 +35,11 @@ BLE UUID：
 | `...0003` | device -> web/app | PCM 16 kHz, 16-bit, mono, little-endian |
 | `...0002` | web/app -> device | control command |
 | `...0004` | device -> web/app | JSON metrics |
+
+### 固件选择
+
+- `firmware/PdmBleAudioOptimized/`：优化实验固件，16 kHz PCM、ring buffer、AGC、metrics，适合继续做硬件收音调参。
+- `firmware/PsyGuardVoiceKeyboard/`：当前已接入 Voice Keyboard 的兼容固件，8 kHz BLE 音频、`0x01/0x00` 控制、`PDM.setGain(60)`，适合直接给 Voice Keyboard 的 `audio.device: xiao_ble` 使用。
 
 兼容旧控制命令：
 
